@@ -21,7 +21,7 @@
 		"deploy": "gh-pages -d build"
 	},
 
-	"homepage": "https://github.com/anothercod/react.git",
+	"homepage": "https://github.com/anothercod/react-Todo-app.git",
 	"eslintConfig": {
 		"extends": [
 			"react-app",

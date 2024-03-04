@@ -1,7 +1,6 @@
 import React from 'react'
 
-export default function Form(handleSubmit, value, setValue) {
-
+export default function Form({handleSubmit, value, setValue}) {
     const handleChange = (e) => {
         setValue(e.target.value);
     };
@@ -17,13 +16,7 @@ export default function Form(handleSubmit, value, setValue) {
                 onChange={handleChange}
                 />
 
-                <input
-                type="submit"
-                value="입력"
-                className="btn"
-                style={{ flex: '1'}}
-                />
-
+                <input type="submit" value="입력" className="btn" style={{ flex: '1'}}/>
         </form>      
-    )
+    );
 }
