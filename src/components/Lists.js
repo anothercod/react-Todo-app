@@ -1,59 +1,68 @@
 import React from 'react'
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import List from './List';
 
-export default function Lists({todoData, setTodoData}) {
+const Lists = React.memo (({todoData, setTodoData, handleClick}) => {
+  console.log("Lists component");
 
-    const btnStyle = {
-        color: "#fff",
-        border: "none",
-        padding: "5px 9px",
-        borderRadius: "50%",
-        cursor: "pointer",
-        float:"right",
-    };
+  const handleEnd = (result) => {
+    // result 매개변수에는 source 항목 및 대상 위치가 같은 드래그 이벤트에 대한 정보가 포함됨.
+    console.log('result', result);
 
+    // 목적지가 없으면(이벤트 취소) 이 함수를 종료함.
+    if(!result.destination) return;
 
-    const handleCompleteChange = (id) => {
-        let newTodoData = todoData.map((data) => {
-          if (data.id === id) {
-            data.completed = !data.completed;
-          }
-          return data;
-        });
-    
-        setTodoData(newTodoData);
-        //this.setState({todoData: newTodoData});
-    };
+    // 리액트 불변성을 지켜주기 위해 새로운 todoData 생성
+    // 이것도 가능 : Array.from(todoData); or todoData.slice();
+    const newTodoData = [...todoData];
 
-    const getStyle = (completed) => {
-        return {
-          padding: "10px",
-          borderBottom: "1px #ccc dotted",
-          textDecoration: completed ? "line-through" : "none",
-        };
-      };
-    
-    
-    const handleClick = (id) => {
-        let newTodoData = todoData.filter(data => data.id !== id);
-        console.log("newTodoData", newTodoData);
-        setTodoData(newTodoData);
-    };
+    // 1) 변경시키는 아이템을 배열에서 지워줌.
+    // 2) return 값으로 지워진 아이템을 잡아줌.
+    const [reorderedItem] = newTodoData.splice(result.source.index, 1);
 
-
+    // 원하는 자리에 reorderedItem을 insert 해줌.
+    newTodoData.splice(result.destination.index, 0, reorderedItem);
+    setTodoData(newTodoData);
+    localStorage.setItem("todoData", JSON.stringify(newTodoData));
+  };
+  
   return (
     <div>
-        {/* map 메서드 활용 */}
-            {todoData.map((data) => (
-            <div style={getStyle(data.completed)} key={data.id}>
-              <p>
-                <input type="checkbox" defaultChecked={false}
-                onChange={() => handleCompleteChange(data.id)}/> 
-                {data.title}
-                <button style={btnStyle}
-                onClick={() => handleClick(data.id)}>x</button>
-              </p>
+      <DragDropContext onDragEnd={handleEnd}>
+        <Droppable droppableId="Todo">
+          {(provided) => (
+            <div 
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+            >
+              {todoData.map((data, index) => (
+                <Draggable
+                  key={data.id}
+                  draggableId={data.id.toString()}
+                  index={index}            
+                >
+                  {(provided, snapshot) => (
+                    <List
+                      handleClick={handleClick}
+                      key={data.id}
+                      id={data.id}
+                      title={data.title}
+                      completed={data.completed}
+                      todoData={todoData}
+                      setTodoData={setTodoData}
+                      provided={provided}
+                      snapshot={snapshot}
+                    />
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
             </div>
-          ))}
+          )}
+        </Droppable>
+      </DragDropContext>
     </div>
   );
-}
+});
+
+export default Lists
